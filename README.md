@@ -1,6 +1,6 @@
 # Onix Payments SDK
 
-SDK Java para integração com a API da Onix Payments, com suporte inicial ao recebimento de pagamentos via Pix.
+SDK Java para integração com a API da Onix Payments, com suporte ao recebimento de pagamentos via Pix e ao mapeamento dos webhooks de pagamento.
 
 ## Requisitos
 
@@ -10,7 +10,7 @@ SDK Java para integração com a API da Onix Payments, com suporte inicial ao re
 
 ## Instalação local
 
-Enquanto o SDK não estiver publicado em um repositorio remoto, instale o pacote no Maven local:
+Enquanto o SDK não estiver publicado em um repositório remoto, instale o pacote no Maven local:
 
 ```bash
 ./mvnw clean install
@@ -39,7 +39,7 @@ https://app.onixpayments.com.br/api/v1
 Todas as requisições para a API exigem os headers:
 
 ```text
-x-public-key: sua chave publica
+x-public-key: sua chave pública
 x-secret-key: sua chave secreta
 ```
 
@@ -64,7 +64,7 @@ public class CheckoutService {
 }
 ```
 
-### Exemplo sincrono
+### Exemplo síncrono
 
 ```java
 import tech.techsete.onix_payments_sdk.dtos.requests.PaymentClientRequest;
@@ -134,7 +134,7 @@ paymentService.createdAsync("SUA_CHAVE_PUBLICA_AQUI", "SUA_CHAVE_SECRETA_AQUI", 
 
 ## Uso com headers customizados
 
-Também e possivel passar os headers manualmente:
+Também é possível passar os headers manualmente:
 
 ```java
 Map<String, String> headers = Map.of(
@@ -163,13 +163,95 @@ try {
 }
 ```
 
-Se `x-public-key` ou `x-secret-key` não forem informados, o SDK lanca `IllegalArgumentException` antes de enviar a requisicao.
+Se `x-public-key` ou `x-secret-key` não forem informados, o SDK lança `IllegalArgumentException` antes de enviar a requisição.
+
+## Webhooks de pagamento
+
+A Onix Payments envia notificações para a URL configurada no `callbackUrl`. O corpo desses eventos pode ser recebido com `PaymentWebhookPayload`.
+
+```java
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tech.techsete.onix_payments_sdk.dtos.webhooks.PaymentWebhookPayload;
+import tech.techsete.onix_payments_sdk.enums.PaymentWebhookEvent;
+
+@RestController
+@RequestMapping("/webhooks/onix-payments")
+public class OnixPaymentsWebhookController {
+
+    @PostMapping("/payments")
+    public ResponseEntity<Void> receivePaymentWebhook(@RequestBody PaymentWebhookPayload payload) {
+        PaymentWebhookEvent event = payload.getEvent();
+        String transactionId = payload.getTransaction().getId();
+        String validationToken = payload.getToken();
+
+        return ResponseEntity.ok().build();
+    }
+}
+```
+
+Eventos de pagamento mapeados:
+
+```text
+TRANSACTION_CREATED
+TRANSACTION_PAID
+TRANSACTION_CANCELED
+TRANSACTION_REFUNDED
+TRANSACTION_CHARGED_BACK
+```
+
+### Estrutura do webhook
+
+| Campo | Tipo | Descrição |
+| --- | --- | --- |
+| `event` | `PaymentWebhookEvent` | Nome do evento disparado. |
+| `token` | `String` | Token para validar a autenticidade da notificação. |
+| `offerCode` | `String` | Código da oferta, quando a venda veio do checkout interno. |
+| `checkoutUrl` | `String` | URL do checkout acessada pelo cliente. |
+| `client` | `PaymentWebhookClient` | Dados do cliente que realizou a transação. |
+| `transaction` | `PaymentWebhookTransaction` | Dados da transação. |
+| `subscription` | `PaymentWebhookSubscription` | Dados da assinatura, quando for cobrança recorrente. |
+| `orderItems` | `List<PaymentWebhookOrderItem>` | Itens do pedido. |
+| `trackProps` | `PaymentWebhookTrackProps` | UTMs e dados de contexto da origem. |
+
+### Dados da transação no webhook
+
+| Campo | Tipo | Descrição |
+| --- | --- | --- |
+| `id` | `String` | Identificador da transação. |
+| `identifier` | `String` | Identificador informado na criação da cobrança. |
+| `status` | `PaymentWebhookTransactionStatus` | Status da transação. |
+| `paymentMethod` | `PaymentMethod` | Método de pagamento. |
+| `originalAmount` | `BigDecimal` | Valor na moeda original do cliente. |
+| `amount` | `BigDecimal` | Valor na moeda de recebimento do produtor. |
+| `commissionAmount` | `BigDecimal` | Valor líquido a ser recebido. |
+| `originalCurrency` | `String` | Moeda original do cliente. |
+| `currency` | `String` | Moeda de recebimento do produtor. |
+| `exchangeRate` | `BigDecimal` | Taxa de câmbio, quando aplicável. |
+| `installments` | `Integer` | Número de parcelas. |
+| `createdAt` | `OffsetDateTime` | Data e hora de criação da cobrança. |
+| `payedAt` | `OffsetDateTime` | Data e hora do pagamento. |
+| `pixInformation` | `PaymentWebhookPixInformation` | Dados do Pix, quando o pagamento for via Pix. |
+| `boletoInformation` | `PaymentWebhookBoletoInformation` | Dados do boleto, quando o pagamento for via boleto. |
+
+Status de transação mapeados:
+
+```text
+COMPLETED
+FAILED
+PENDING
+REFUNDED
+CHARGED_BACK
+```
 
 ## DTOs principais
 
 ### PaymentRequest
 
-| Campo | Tipo | Obrigatorio | Descrição |
+| Campo | Tipo | Obrigatório | Descrição |
 | --- | --- | --- | --- |
 | `identifier` | `String` | Sim | Identificador único da transação gerado pela aplicação. |
 | `amount` | `BigDecimal` | Sim | Valor da transação em reais. |
@@ -195,7 +277,7 @@ Se `x-public-key` ou `x-secret-key` não forem informados, o SDK lanca `IllegalA
 | `details` | `String` | Detalhes adicionais. |
 | `errorDescription` | `String` | Descrição de erro quando houver falha. |
 
-### Status possiveis
+### Status possíveis
 
 ```text
 OK
@@ -205,7 +287,7 @@ REJECTED
 CANCELED
 ```
 
-## Comandos uteis
+## Comandos úteis
 
 ```bash
 ./mvnw test
