@@ -160,6 +160,7 @@ try {
     Integer statusCode = error.getStatusCode();
     String errorCode = error.getErrorCode();
     String message = error.getMessage();
+    var details = error.getDetails();
 }
 ```
 
