@@ -293,4 +293,28 @@ CANCELED
 ```bash
 ./mvnw test
 ./mvnw clean install
+./mvnw clean deploy -Pdeploy
+```
+
+## Publicação no Maven Central
+
+Para publicar, configure o servidor `central` no `settings.xml` do Maven com o token gerado no Central Portal:
+
+```xml
+<settings>
+    <servers>
+        <server>
+            <id>central</id>
+            <username>SEU_TOKEN_USERNAME</username>
+            <password>SEU_TOKEN_PASSWORD</password>
+        </server>
+    </servers>
+</settings>
+```
+
+Depois, exporte a senha da chave GPG e execute o deploy com o profile `deploy`:
+
+```bash
+export GPG_PASSPHRASE="SUA_SENHA_GPG"
+./mvnw clean deploy -Pdeploy -Dgpg.keyname=SUA_CHAVE_GPG
 ```
