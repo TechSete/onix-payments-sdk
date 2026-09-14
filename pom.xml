@@ -11,7 +11,7 @@
 
 	<groupId>tech.techsete</groupId>
 	<artifactId>onix-payments-sdk</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>Onix Payments SDK</name>
 	<description>Biblioteca SDK para integrações de pagamentos com a Onix Payments</description>
 	<url>https://github.com/TechSete/onix-payments-sdk</url>
@@ -60,7 +60,7 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
+			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<dependency>
