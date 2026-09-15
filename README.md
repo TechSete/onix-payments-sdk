@@ -6,6 +6,7 @@ SDK Java para integração com a API da Onix Payments, com suporte ao recebiment
 
 - Java 17+
 - Spring Boot 4+
+- Jackson 3
 - Maven 3.9+ ou Maven Wrapper
 
 ## Instalação local
@@ -22,13 +23,15 @@ Depois, adicione a dependência no projeto consumidor:
 <dependency>
     <groupId>tech.techsete</groupId>
     <artifactId>onix-payments-sdk</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
 ## Configuração
 
 O SDK possui autoconfiguração Spring Boot. Ao adicionar a dependência, os componentes do pacote `tech.techsete.onix_payments_sdk` são registrados automaticamente.
+
+O SDK utiliza Jackson 3, portanto integrações e testes que instanciem `ObjectMapper` diretamente devem usar o pacote `tools.jackson.databind`.
 
 O cliente HTTP configurado usa a URL base:
 
@@ -286,35 +289,4 @@ FAILED
 PENDING
 REJECTED
 CANCELED
-```
-
-## Comandos úteis
-
-```bash
-./mvnw test
-./mvnw clean install
-./mvnw clean deploy -Dgpg.keyname=SUA_CHAVE_GPG
-```
-
-## Publicação no Maven Central
-
-Para publicar, configure o servidor `central` no `settings.xml` do Maven com o token gerado no Central Portal:
-
-```xml
-<settings>
-    <servers>
-        <server>
-            <id>central</id>
-            <username>SEU_TOKEN_USERNAME</username>
-            <password>SEU_TOKEN_PASSWORD</password>
-        </server>
-    </servers>
-</settings>
-```
-
-Depois, exporte a senha da chave GPG e execute o deploy:
-
-```bash
-export GPG_PASSPHRASE="SUA_SENHA_GPG"
-./mvnw clean deploy -Dgpg.keyname=SUA_CHAVE_GPG
 ```
